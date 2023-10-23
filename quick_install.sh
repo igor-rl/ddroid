@@ -5,7 +5,7 @@ if ! command -v git &> /dev/null; then
     exit 1
 fi
 mkdir -p scripts/deploy_droid
-git clone https://github.com/igor-rl/ddroid.git scripts/deploy_droid/temp
-mv scripts/deploy_droid/temp/scripts/* scripts/deploy_droid
-rm -rf scripts/deploy_droid/temp
-# bash scripts/deploy_droid/install.sh
+git clone https://github.com/igor-rl/ddroid.git
+mv ddroid/scripts/deploy_droid/* scripts/deploy_droid
+rm -rf ddroid
+bash scripts/deploy_droid/install.sh
