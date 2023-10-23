@@ -2,10 +2,8 @@
 
 add_to_config() {
   local config_file=$1
-  if ! grep -q "alias ddroid='./scripts/deploy_droid/ddroid.sh'" $config_file; then
-    echo "alias ddroid='./scripts/deploy_droid/ddroid.sh'" >> $config_file
-    echo "Alias 'ddroid' adicionado ao $config_file."
-  fi
+  echo "alias ddroid='./scripts/deploy_droid/ddroid.sh'" >> $config_file
+  echo "Alias 'ddroid' adicionado ao $config_file."
   echo
   echo
   echo "🤖 DDroid instalado com sucesso!"
