@@ -19,7 +19,6 @@ add_to_config() {
   echo
   echo
   echo "Para iniciar o '🤖 DDroid', execute o comando 'ddroid' no seu terminal."
-  exec $SHELL
 }
 echo "Iniciando a instalação do 🤖 DDroid no seu projeto..."
 sleep 4
