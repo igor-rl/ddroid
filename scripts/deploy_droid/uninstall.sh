@@ -6,13 +6,13 @@ remove_from_config() {
         sed -i '/alias ddroid/d' $config_file
         echo "Alias 'ddroid' removido de $config_file."
     # else
-        echo "Alias 'ddroid' não encontrado em $config_file."
+        # echo "Alias 'ddroid' não encontrado em $config_file."
     # fi
 }
 
 remove_ddroid_directory() {
     if [ -d "scripts/deploy_droid" ]; then
-        # rm -rf scripts/deploy_droid
+        rm -rf scripts/deploy_droid
         echo "Diretório 'ddroid' removido com sucesso!"
     else
         echo "Diretório 'ddroid' não encontrado!"
