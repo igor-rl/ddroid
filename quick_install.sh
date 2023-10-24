@@ -8,4 +8,4 @@ mkdir -p scripts/deploy_droid
 git clone https://github.com/igor-rl/ddroid.git
 mv ddroid/scripts/deploy_droid/* scripts/deploy_droid
 rm -rf ddroid
-bash scripts/deploy_droid/install.sh
+bash ./scripts/deploy_droid/install.sh
