@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Iniciando a instalação do 🤖 DDroid no seu projeto..."
+
 if ! command -v git &> /dev/null; then
     echo "Erro: git não está instalado."
     exit 1
@@ -9,6 +11,7 @@ git clone https://github.com/igor-rl/ddroid.git
 mv ddroid/scripts/deploy_droid/* scripts/deploy_droid
 rm -rf ddroid
 add_to_config() {
+  echo "Despertando DDroid 🤖..."
   local config_file=$1
   echo "alias ddroid='./scripts/deploy_droid/ddroid.sh'" >> $config_file
   echo "Alias 'ddroid' adicionado ao $config_file."
@@ -19,8 +22,8 @@ add_to_config() {
   echo
   echo
   echo "Para iniciar o '🤖 DDroid', execute o comando 'ddroid' no seu terminal."
+  exec $SHELL
 }
-echo "Iniciando a instalação do 🤖 DDroid no seu projeto..."
 sleep 4
 if [[ $SHELL == *"zsh"* ]]; then
     add_to_config ~/.zshrc
@@ -29,4 +32,3 @@ elif [[ $SHELL == *"bash"* ]]; then
 else
     echo "Shell não reconhecido. O alias não foi adicionado automaticamente."
 fi
-exec $SHELL
