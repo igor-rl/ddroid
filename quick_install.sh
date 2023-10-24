@@ -21,7 +21,6 @@ add_to_config() {
   echo
   echo
   echo "Para iniciar o '🤖 DDroid', execute o comando 'ddroid' no seu terminal."
-  exec $SHELL
 }
 sleep 4
 if [[ $SHELL == *"zsh"* ]]; then
@@ -31,3 +30,5 @@ elif [[ $SHELL == *"bash"* ]]; then
 else
     echo "Shell não reconhecido. O alias não foi adicionado automaticamente."
 fi
+echo "reiniciando ${SHELL}"
+exec $SHELL
