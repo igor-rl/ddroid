@@ -22,11 +22,11 @@ add_to_config() {
 }
 echo "Iniciando a instalação do 🤖 DDroid no seu projeto..."
 sleep 4
-# if [[ $SHELL == *"zsh"* ]]; then
-#     add_to_config ~/.zshrc
-# elif [[ $SHELL == *"bash"* ]]; then
-#     add_to_config ~/.bashrc
-# else
-#     echo "Shell não reconhecido. O alias não foi adicionado automaticamente."
-# fi
-# exec $SHELL
+if [[ $SHELL == *"zsh"* ]]; then
+    add_to_config ~/.zshrc
+elif [[ $SHELL == *"bash"* ]]; then
+    add_to_config ~/.bashrc
+else
+    echo "Shell não reconhecido. O alias não foi adicionado automaticamente."
+fi
+exec $SHELL
