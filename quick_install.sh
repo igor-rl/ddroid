@@ -30,5 +30,5 @@ elif [[ $SHELL == *"bash"* ]]; then
 else
     echo "Shell não reconhecido. O alias não foi adicionado automaticamente."
 fi
-echo "reiniciando ${SHELL}"
+echo "Reiniciando seu terminal ${SHELL}"
 exec $SHELL
