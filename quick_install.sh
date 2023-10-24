@@ -1,7 +1,6 @@
 #!/bin/bash
 
-echo "Iniciando a instalação do 🤖 DDroid no seu projeto..."
-
+echo "Iniciando a construção do 🤖 DDroid no seu projeto..."
 if ! command -v git &> /dev/null; then
     echo "Erro: git não está instalado."
     exit 1
