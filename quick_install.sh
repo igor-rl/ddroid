@@ -30,7 +30,7 @@ if [ $? -eq 1 ]; then
     mkdir -p ~/bin
 
     # Move o ddroid.sh para ~/bin e torna-o executável
-    mv ddroid/scripts/deploy_droid/ddroid.sh ~/bin/ddroid
+    mv ddroid/scripts/deploy_droid ~/bin/ddroid
     chmod +x ~/bin/ddroid
 
     # Limpa o diretório temporário ddroid
