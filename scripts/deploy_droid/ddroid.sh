@@ -31,6 +31,9 @@ load_or_create_env() {
     echo "LOCAL_DB_VOLUME=./db/mysql" >> ddroid.env
     echo "DOCKER_HUB_USER=" >> ddroid.env
     echo "DOCKER_HUB_IMAGE=" >> ddroid.env
+    echo "K8S_DB_FOLDER=" >> ddroid.env
+    echo "K8S_DB_SERVICE_NAME=" >> ddroid.env
+    echo "K8S_API_FOLDER=" >> ddroid.env
   fi
   # Carrega as variáveis do arquivo ddroid.env
   source ddroid.env

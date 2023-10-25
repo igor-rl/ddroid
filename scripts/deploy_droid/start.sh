@@ -1,7 +1,7 @@
 #!/bin/bash
 
-POSTGRES_PORTS=(4001 5432)
-WHATSAPP_PORTS=(4000 4000)
+DB_PORTS=(4001 5432)
+DB_PORTS=(4000 4000)
 
 RUN_MIGRATION=false
 RUN_DATABASE=false
@@ -19,61 +19,62 @@ for arg in "$@"; do
 done
 
 echo "🤖  Iniciando deploy"
+source ddroid.env
 
 # DATABASE
 if $RUN_DATABASE; then
     echo
-    echo "📦  Iniciando configurações do Postgres..."
-    echo "🤖  kubectl apply -f k8s/postgreSql"
-    kubectl apply -f k8s/postgreSql
-    while [[ $(kubectl get pods -l app=postgres -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+    echo "📦  Iniciando configurações do ${DB_CONTAINER_NAME}..."
+    echo "🤖  kubectl apply -f ${K8S_DB_FOLDER}"
+    kubectl apply -f ${K8S_DB_FOLDER}
+    while [[ $(kubectl get pods -l app=${DB_CONTAINER_NAME} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
         echo
-        echo "🤖  kubectl get pods -l app=postgres"
-        kubectl get pods -l app=postgres
+        echo "🤖  kubectl get pods -l app=${DB_CONTAINER_NAME}"
+        kubectl get pods -l app=${DB_CONTAINER_NAME}
         sleep 5
     done
     echo
-    echo "🤖  kubectl get pods -l app=postgres -o jsonpath='{.items[0].metadata.name}'"
-    POSTGRES_POD=$(kubectl get pods -l app=postgres -o jsonpath='{.items[0].metadata.name}')
-    echo "🤖  $POSTGRES_POD"
+    echo "🤖  kubectl get pods -l app=${DB_CONTAINER_NAME} -o jsonpath='{.items[0].metadata.name}'"
+    DB_POD=$(kubectl get pods -l app=${DB_CONTAINER_NAME} -o jsonpath='{.items[0].metadata.name}')
+    echo "🤖  ${DB_POD}"
     echo
-    echo "🤖  kubectl port-forward $POSTGRES_POD ${POSTGRES_PORTS[0]}:${POSTGRES_PORTS[1]} & echo $! > tmp/postgres-port-forward.pid"
-    kubectl port-forward $POSTGRES_POD ${POSTGRES_PORTS[0]}:${POSTGRES_PORTS[1]} &
-    echo $! > tmp/postgres-port-forward.pid
+    echo "🤖  kubectl port-forward ${DB_POD} ${DB_PORTS[0]}:${DB_PORTS[1]} & echo $! > tmp/db-port-forward.pid"
+    kubectl port-forward ${DB_POD} ${DB_PORTS[0]}:${DB_PORTS[1]} &
+    echo $! > tmp/db-port-forward.pid
     echo
-    echo "🤖  🔗 Port-forward em segundo plano ${POSTGRES_PORTS[0]}:${POSTGRES_PORTS[1]}"
-    POSTGRES_ENDPOINT=$(kubectl get service postgres -o=jsonpath='{.spec.clusterIP}')
+    echo "🤖  🔗 Port-forward em segundo plano ${DB_PORTS[0]}:${DB_PORTS[1]}"
+    DB_ENDPOINT=$(kubectl get service ${K8S_DB_SERVICE_NAME} -o=jsonpath='{.spec.clusterIP}')
     echo
-    echo "🤖  kubectl create configmap whatsapp-config --from-literal=instance_host=$POSTGRES_ENDPOINT --dry-run=client -o yaml | kubectl apply -f -"
-    kubectl create configmap whatsapp-config --from-literal=instance_host=$POSTGRES_ENDPOINT --dry-run=client -o yaml | kubectl apply -f -
+    echo "🤖  kubectl create configmap app-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -"
+    kubectl create configmap app-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -
 fi
 
 # API
 echo
 echo "📦  Iniciando configurações da API..."
-echo "🤖  kubectl apply -f k8s/whatsapp"
-kubectl apply -f k8s/whatsapp
-while [[ $(kubectl get pods -l app=whatsapp-back -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+echo "🤖  kubectl apply -f ${K8S_API_FOLDER}"
+kubectl apply -f ${K8S_API_FOLDER}
+while [[ $(kubectl get pods -l app=${BACK_CONTAINER_NAME} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
     echo
-    echo "🤖  kubectl get pods -l app=whatsapp-back"
-    kubectl get pods -l app=whatsapp-back
+    echo "🤖  kubectl get pods -l app=${BACK_CONTAINER_NAME}"
+    kubectl get pods -l app=${BACK_CONTAINER_NAME}
     sleep 5
 done
-WHATSAPP_POD=$(kubectl get pods -l app=whatsapp-back -o jsonpath='{.items[0].metadata.name}')
+APP_POD=$(kubectl get pods -l app=${BACK_CONTAINER_NAME} -o jsonpath='{.items[0].metadata.name}')
 if $RUN_MIGRATION; then
     echo
     echo "🤖  Executando migrações..."
-    echo "🤖  kubectl exec $WHATSAPP_POD -- npm run migration:run"
-    kubectl exec $WHATSAPP_POD -- npm run migration:run
+    echo "🤖  kubectl exec ${APP_POD} -- npm run migration:run"
+    kubectl exec ${APP_POD} -- npm run migration:run
 fi
 echo
-echo "🤖  kubectl port-forward $WHATSAPP_POD ${WHATSAPP_PORTS[0]}:${WHATSAPP_PORTS[1]} & echo $! > tmp/whatsapp-port-forward.pid"
-kubectl port-forward $WHATSAPP_POD ${WHATSAPP_PORTS[0]}:${WHATSAPP_PORTS[1]} &
-echo $! > tmp/whatsapp-port-forward.pid
+echo "🤖  kubectl port-forward ${APP_POD} ${DB_PORTS[0]}:${DB_PORTS[1]} & echo $! > tmp/app-port-forward.pid"
+kubectl port-forward ${APP_POD} ${DB_PORTS[0]}:${DB_PORTS[1]} &
+echo $! > tmp/app-port-forward.pid
 echo
-echo "🤖  🔗 Port-forward do WhatsApp em segundo plano ${WHATSAPP_PORTS[0]}:${WHATSAPP_PORTS[1]}"
+echo "🤖  🔗 Port-forward do ${BACK_CONTAINER_NAME} em segundo plano ${DB_PORTS[0]}:${DB_PORTS[1]}"
 echo
 echo "🤖  ✅ Deploy concluído!"
 echo
-echo "🤖  kubectl logs -f $WHATSAPP_POD"
-kubectl logs -f $WHATSAPP_POD
+echo "🤖  kubectl logs -f $APP_POD"
+kubectl logs -f $APP_POD
