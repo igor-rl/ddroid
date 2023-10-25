@@ -27,11 +27,11 @@ if [ $? -eq 1 ]; then
     git clone https://github.com/igor-rl/ddroid.git
 
     # Cria o diretório ~/bin se ele não existir
-    mkdir -p ~/bin
+    mkdir -p ~/bin/ddroid
 
     # Move o ddroid.sh para ~/bin e torna-o executável
-    mv ddroid/scripts/deploy_droid ~/bin/ddroid
-    chmod +x ~/bin/ddroid
+    mv ddroid/scripts/deploy_droid ~/bin/ddroid/ddroid
+    chmod +x ~/bin/ddroid/ddroid
 
     # Limpa o diretório temporário ddroid
     rm -rf ddroid
