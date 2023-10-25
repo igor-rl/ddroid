@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="0.0.1"
+DDROID_VERSION="0.0.2"
 
 if [ "$1" == "--version" ]; then
     echo "$DDROID_VERSION"
@@ -299,6 +299,7 @@ dockerDev(){
   echo -e "\e[1m🐳 Docker - Teste em ambiente de desenvolvimento\e[0m"
   echo "🤖  docker compose up -d"
   docker compose up -d
+  verificarInstalacao
   verificaMigration
   echo "🤖  docker exec -it $BACK_CONTAINER_NAME /bin/sh -c 'npm run start:dev'"
   echo "🤖  docker logs $BACK_CONTAINER_NAME -f"
