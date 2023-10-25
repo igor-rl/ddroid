@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.6"
+DDROID_VERSION="1.0.7"
 
 check_current_version() {
     if [ -f ~/bin/ddroid ]; then
@@ -31,6 +31,7 @@ if [ $? -eq 1 ]; then
 
     # Move o ddroid.sh para ~/bin e torna-o executável
     mv ddroid/scripts/deploy_droid ~/bin/ddroid/ddroid
+    chmod +x ~/bin/ddroid
     chmod +x ~/bin/ddroid/ddroid
 
     # Limpa o diretório temporário ddroid
