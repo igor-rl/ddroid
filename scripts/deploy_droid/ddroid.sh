@@ -387,16 +387,16 @@ while true; do
       init)
         echo "🤖  minikube start"
         minikube start
-        source ./scripts/deploy_droid/start.sh --database=true --migration=true; exit
+        source ./bin/ddroid/start.sh --database=true --migration=true; exit
           ;;
       start)
-        source ./scripts/deploy_droid/start.sh --database=true; exit
+        source ./bin/ddroid/start.sh --database=true; exit
         ;;
       stop)
-        source ./scripts/deploy_droid/stop.sh; exit
+        source ./bin/ddroid/stop.sh; exit
         ;;
       destroi)
-        source ./scripts/deploy_droid/destroy.sh; exit
+        source ./bin/ddroid/destroy.sh; exit
         ;;
     esac
   fi
