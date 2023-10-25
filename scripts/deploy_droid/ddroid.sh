@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.0"
+DDROID_VERSION="1.0.1"
 RUN_MIGRATION=false
 CURSOR=">"
 
@@ -8,6 +8,15 @@ if [ "$1" == "--version" ]; then
   echo "$DDROID_VERSION"
   exit 0
 fi
+
+unsetVars(){
+  CURSOR_POSITION=0
+  AMBIENTE=none
+  TESTE=none
+  LOCAL_OPTIONS=none
+  DOCKER_OPTIONS=none
+  KBS_OPTIONS=none
+}
 
 load_or_create_env() {
   if [ ! -f ddroid.env ]; then
@@ -332,7 +341,8 @@ dockerPrune(){
 load_or_create_env
 
 while true; do
-  CURSOR_POSITION=0
+
+  unsetVars
 
   if [ "$AMBIENTE" = "none" ]; then
     defineAmbiente
