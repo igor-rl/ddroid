@@ -1,4 +1,12 @@
 #!/bin/bash
+
+DDROID_VERSION="0.0.1"
+
+if [ "$1" == "--version" ]; then
+    echo "$DDROID_VERSION"
+    exit 0
+fi
+
 iniciarVariaveis(){
   RUN_MIGRATION=false
   DB_CONTAINER_NAME=pg-db

@@ -1,34 +1,58 @@
 #!/bin/bash
 
+DDROID_VERSION="0.0.1"
+
+check_current_version() {
+    if [ -f ~/bin/ddroid ]; then
+        CURRENT_VERSION=$(~/bin/ddroid --version)
+        if [ "$CURRENT_VERSION" != "$DDROID_VERSION" ]; then
+            return 1  # Versions are different
+        else
+            return 0  # Versions are the same
+        fi
+    else
+        return 1  # DDroid is not installed
+    fi
+}
+
 echo "Iniciando a construção do 🤖 DDroid no seu projeto..."
 if ! command -v git &> /dev/null; then
     echo "Erro: git não está instalado."
     exit 1
 fi
-mkdir -p scripts/deploy_droid
-git clone https://github.com/igor-rl/ddroid.git
-mv ddroid/scripts/deploy_droid/* scripts/deploy_droid
-rm -rf ddroid
-add_to_config() {
-  echo "Despertando DDroid 🤖..."
-  local config_file=$1
-  echo "alias ddroid='./scripts/deploy_droid/ddroid.sh'" >> $config_file
-  echo "Alias 'ddroid' adicionado ao $config_file."
-  echo
-  echo
-  echo "🤖 DDroid instalado com sucesso!"
-  sleep 1
-  echo
-  echo
-  echo "Para iniciar o '🤖 DDroid', execute o comando 'ddroid' no seu terminal."
-}
-sleep 4
-if [[ $SHELL == *"zsh"* ]]; then
-    add_to_config ~/.zshrc
-elif [[ $SHELL == *"bash"* ]]; then
-    add_to_config ~/.bashrc
+
+check_current_version
+if [ $? -eq 1 ]; then
+    # Clona o repositório
+    git clone https://github.com/igor-rl/ddroid.git
+
+    # Cria o diretório ~/bin se ele não existir
+    mkdir -p ~/bin
+
+    # Move o ddroid.sh para ~/bin e torna-o executável
+    mv ddroid/scripts/deploy_droid/ddroid.sh ~/bin/ddroid
+    chmod +x ~/bin/ddroid
+
+    # Limpa o diretório temporário ddroid
+    rm -rf ddroid
+
+    echo "🤖 DDroid v${NEW_DDROID_VERSION} com sucesso!"
+    sleep 1
+    echo
+    echo "Para iniciar o '🤖 DDroid', execute o comando 'ddroid' no seu terminal."
+
+    # Verifica se ~/bin está no PATH. Se não estiver, adiciona ao .bashrc ou .zshrc
+    if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
+        if [[ $SHELL == *"zsh"* ]]; then
+            echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
+        elif [[ $SHELL == *"bash"* ]]; then
+            echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+        else
+            echo "Shell não reconhecido. Ajuste manualmente o PATH se necessário."
+        fi
+    fi
+
+    exec $SHELL
 else
-    echo "Shell não reconhecido. O alias não foi adicionado automaticamente."
+    echo "🤖 DDroid já está na versão mais recente ($NEW_DDROID_VERSION)."
 fi
-echo "Reiniciando seu terminal ${SHELL}"
-exec $SHELL
