@@ -15,7 +15,7 @@ check_current_version() {
     fi
 }
 
-echo "Iniciando a construção do 🤖 DDroid no seu projeto..."
+echo "Instalando 🤖 DDroid v${DDROID_VERSION} no seu projeto..."
 if ! command -v git &> /dev/null; then
     echo "Erro: git não está instalado."
     exit 1
@@ -36,7 +36,7 @@ if [ $? -eq 1 ]; then
     # Limpa o diretório temporário ddroid
     rm -rf ddroid
 
-    echo "🤖 DDroid v${NEW_DDROID_VERSION} com sucesso!"
+    echo "🤖 DDroid v${DDROID_VERSION} com sucesso!"
     sleep 1
     echo
     echo "Para iniciar o '🤖 DDroid', execute o comando 'ddroid' no seu terminal."
@@ -54,5 +54,5 @@ if [ $? -eq 1 ]; then
 
     exec $SHELL
 else
-    echo "🤖 DDroid já está na versão mais recente ($NEW_DDROID_VERSION)."
+    echo "🤖 DDroid já está na versão mais recente ($DDROID_VERSION)."
 fi
