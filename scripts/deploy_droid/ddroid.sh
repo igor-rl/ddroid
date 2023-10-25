@@ -1,26 +1,30 @@
 #!/bin/bash
 
-DDROID_VERSION="0.0.2"
+DDROID_VERSION="1.0.0"
+RUN_MIGRATION=false
+CURSOR=">"
 
 if [ "$1" == "--version" ]; then
-    echo "$DDROID_VERSION"
-    exit 0
+  echo "$DDROID_VERSION"
+  exit 0
 fi
 
-iniciarVariaveis(){
-  RUN_MIGRATION=false
-  DB_CONTAINER_NAME=pg-db
-  BACK_CONTAINER_NAME=pg-back
-  AMBIENTE=none
-  TESTE=none
-  CURSOR=">"
-  CURSOR_POSITION=0
-  LOCAL_OPTIONS=none
-  DOCKER_OPTIONS=none
-  KBS_OPTIONS=none
-  LOCAL_DB_VOLUME=./db/mysql
-  DOCKER_HUB_USER=igorlage
-  DOCKER_HUB_IMAGE=painel-gestor-back
+load_or_create_env() {
+  if [ ! -f ddroid.env ]; then
+    # Se ddroid.env não existe, cria e preenche com valores padrão
+    echo "DB_CONTAINER_NAME=none" > ddroid.env
+    echo "BACK_CONTAINER_NAME=none" >> ddroid.env
+    echo "AMBIENTE=none" >> ddroid.env
+    echo "TESTE=none" >> ddroid.env
+    echo "LOCAL_OPTIONS=none" >> ddroid.env
+    echo "DOCKER_OPTIONS=none" >> ddroid.env
+    echo "KBS_OPTIONS=none" >> ddroid.env
+    echo "LOCAL_DB_VOLUME=./db/mysql" >> ddroid.env
+    echo "DOCKER_HUB_USER=" >> ddroid.env
+    echo "DOCKER_HUB_IMAGE=" >> ddroid.env
+  fi
+  # Carrega as variáveis do arquivo ddroid.env
+  source ddroid.env
 }
 
 # Analise os argumentos
@@ -325,8 +329,10 @@ dockerPrune(){
   echo "🤖  Operação cancelada."
 }
 
+load_or_create_env
+
 while true; do
-  iniciarVariaveis
+  CURSOR_POSITION=0
 
   if [ "$AMBIENTE" = "none" ]; then
     defineAmbiente
