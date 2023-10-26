@@ -103,7 +103,7 @@ defineAmbiente(){
         0) echo "🏠  Executando teste local..."; AMBIENTE=local; break ;;
         1) echo "🐳  Executando teste com docker..."; AMBIENTE=docker; break ;;
         2) echo "⚓  Executando teste com kubernetes..."; AMBIENTE=k8s; break ;;
-        3) echo "⚰️  Desinstalar DDroid..."; uninstall; exit;;
+        3) echo  uninstall; exit;;
         4) echo "🤖👋  Até logo!"; exit ;;
       esac
     fi
