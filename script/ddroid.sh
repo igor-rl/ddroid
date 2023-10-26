@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.18"
+DDROID_VERSION="1.0.19"
 CURSOR=">"
 RUN_MIGRATION=false
 RUN_DATABASE=false
@@ -40,11 +40,8 @@ load_or_create_env() {
     echo "DB_CONTAINER_NAME=none" > ddroid.env
     echo "DB_VOLUME=./db/mysql" >> ddroid.env
     echo "BACK_CONTAINER_NAME=none" >> ddroid.env
-    echo "" > ddroid.env
-    echo "# k8s" > ddroid.env
     echo "K8S_DB_PORTS=(80 80)" >> ddroid.env
     echo "K8S_APP_PORTS=(80 80)" >> ddroid.env
-    echo "" > ddroid.env
     echo "K8S_DB_FOLDER=" >> ddroid.env
     echo "K8S_DB_POD_NAME=" >> ddroid.env
     echo "K8S_DB_SERVICE_NAME=" >> ddroid.env
