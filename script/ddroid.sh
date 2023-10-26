@@ -87,7 +87,7 @@ defineAmbiente(){
   }
   while true; do
     clear
-    echo "🤖 DDroid ${CURRENT_VERSION}"
+    echo "🤖 DDroid ${DDROID_VERSION}"
     echo
     echo "Como deseja implantar sua aplicação?"
     print_menu
