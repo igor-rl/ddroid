@@ -385,8 +385,8 @@ k8sApply(){
   echo "🤖  🔗 Port-forward em segundo plano ${K8S_DB_PORTS[0]}:${K8S_DB_PORTS[1]}"
   DB_ENDPOINT=$(kubectl get service ${K8S_DB_SERVICE_NAME} -o=jsonpath='{.spec.clusterIP}')
   echo
-  echo "🤖  kubectl create configmap app-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -"
-  kubectl create configmap app-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -
+  echo "🤖  kubectl create configmap ${K8S_API_POD_NAME}-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -"
+  kubectl create configmap ${K8S_API_POD_NAME}-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -
 
   # API
   echo
@@ -450,8 +450,8 @@ k8sDelete(){
   echo "🤖  🗑️  kubectl delete -f ${K8S_API_FOLDER}"
   kubectl delete -f ${K8S_API_FOLDER}
   echo
-  echo "🤖  🗑️  kubectl delete configmap app-config"
-  kubectl delete configmap app-config
+  echo "🤖  🗑️  kubectl delete configmap ${K8S_API_POD_NAME}-config"
+  kubectl delete configmap ${K8S_API_POD_NAME}-config
   echo
   echo "🤖  ✅ projeto encerrado"
 }
