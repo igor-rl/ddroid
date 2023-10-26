@@ -13,5 +13,5 @@
 
 ## Instalação
 ```yml
-curl -s "https://raw.githubusercontent.com/igor-rl/ddroid/main/quick_install.sh?token=$(date +%N | sha256sum | cut -d ' ' -f1)" | bash
+curl -s "https://raw.githubusercontent.com/igor-rl/ddroid/main/quick_install.sh" | bash
 ```
