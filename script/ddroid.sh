@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.2"
+DDROID_VERSION="1.0.9"
 CURSOR=">"
 
 RUN_MIGRATION=false

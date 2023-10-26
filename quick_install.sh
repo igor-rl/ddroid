@@ -1,5 +1,5 @@
 #!/bin/bash
-DDROID_VERSION="1.0.8"
+DDROID_VERSION="1.0.9"
 
 check_current_version() {
     if [ -f ~/bin/ddroid ]; then
@@ -23,7 +23,7 @@ fi
 check_current_version
 if [ $? -eq 1 ]; then
     # Clona o repositório
-    curl -O https://raw.githubusercontent.com/igor-rl/ddroid/main/ddroid.sh
+    curl -O https://raw.githubusercontent.com/igor-rl/ddroid/main/script/ddroid.sh
 
     # Cria o diretório ~/bin se ele não existir
     mkdir -p ~/bin
