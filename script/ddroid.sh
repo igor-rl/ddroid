@@ -112,7 +112,7 @@ defineAmbiente(){
 
 localOptions(){
   CURSOR_POSITION=0
-  options=("🚀  Executar projeto local" "🗑️    Limpar projeto local" "🔙  Voltar")
+  options=("🚀  Executar projeto local" "🗑️   Limpar projeto local" "🔙  Voltar")
   print_menu() {
     for i in "${!options[@]}"; do
       if [[ "$i" -eq $CURSOR_POSITION ]]; then
@@ -186,7 +186,7 @@ KbsOptions(){
 
 dockerOptions(){
   CURSOR_POSITION=0
-  options=("🚀  Teste dev" "🚀  Teste producao" "🗑️    Deletar containers do projeto" "🧨  Destruir tudo" "🔙  Voltar")
+  options=("🚀  Teste dev" "🚀  Teste producao" "🗑️   Deletar containers do projeto" "🧨  Destruir tudo" "🔙  Voltar")
 
   print_menu() {
     for i in "${!options[@]}"; do
@@ -469,7 +469,7 @@ k8sDestroy(){
 }
 
 uninstall(){
-  echo -n "🤖 Remover o DDroid do seu projeto? [s/N]:"
+  echo -n "🤖  Remover o DDroid do seu projeto? [s/N]:"
   read -r response
   if [[ "$response" =~ ^([sS][iI]|[sS])$ ]]; then
     echo
