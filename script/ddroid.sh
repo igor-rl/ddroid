@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.15"
+DDROID_VERSION="1.0.16"
 CURSOR=">"
 RUN_MIGRATION=false
 RUN_DATABASE=false
@@ -547,7 +547,7 @@ while true; do
         k8sApply;
         exit;;
       stop)
-        source ~/bin/ddroid/stop.sh;
+        k8sDelete;
         exit;;
       destroi)
         k8sDestroy;
