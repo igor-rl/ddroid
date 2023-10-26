@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.17"
+DDROID_VERSION="1.0.18"
 CURSOR=">"
 RUN_MIGRATION=false
 RUN_DATABASE=false
@@ -87,7 +87,9 @@ defineAmbiente(){
   }
   while true; do
     clear
-    echo "Olá! Eu sou o 🤖 DDroid. Posso te ajudar nos testes e deploys da sua aplicação?"
+    echo "🤖 DDroid ${CURRENT_VERSION}"
+    echo
+    echo "Como deseja implantar sua aplicação?"
     print_menu
     read -rsn3 key
     if [[ $key == $'\x1b[A' ]]; then
