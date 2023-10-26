@@ -1,6 +1,5 @@
 #!/bin/bash
-
-DDROID_VERSION="1.0.7"
+DDROID_VERSION="1.0.8"
 
 check_current_version() {
     if [ -f ~/bin/ddroid ]; then
@@ -27,17 +26,13 @@ if [ $? -eq 1 ]; then
     git clone https://github.com/igor-rl/ddroid.git
 
     # Cria o diretório ~/bin se ele não existir
-    mkdir -p ~/bin/ddroid
+    mkdir -p ~/bin
 
     # Move o ddroid.sh para ~/bin e torna-o executável
-    mv ddroid/scripts/deploy_droid ~/bin/ddroid/ddroid
+    mv ddroid/ddroid ~/bin/ddroid
     chmod +x ~/bin/ddroid
-    chmod +x ~/bin/ddroid/ddroid
 
-    # Limpa o diretório temporário ddroid
-    rm -rf ddroid
-
-    echo "🤖 DDroid v${DDROID_VERSION} com sucesso!"
+    echo "🤖 DDroid v${DDROID_VERSION} instalado com sucesso!"
     sleep 1
     echo
     echo "Para iniciar o '🤖 DDroid', execute o comando 'ddroid' no seu terminal."
