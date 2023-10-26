@@ -23,7 +23,7 @@ fi
 check_current_version
 if [ $? -eq 1 ]; then
     # Clona o repositório
-    git clone https://github.com/igor-rl/ddroid.git
+    curl -O https://raw.githubusercontent.com/igor-rl/ddroid/main/ddroid.sh
 
     # Cria o diretório ~/bin se ele não existir
     mkdir -p ~/bin
