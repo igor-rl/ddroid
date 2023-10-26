@@ -29,7 +29,7 @@ if [ $? -eq 1 ]; then
     mkdir -p ~/bin
 
     # Move o ddroid.sh para ~/bin e torna-o executável
-    mv ddroid/ddroid ~/bin/ddroid
+    mv ddroid.sh ~/bin/ddroid
     chmod +x ~/bin/ddroid
 
     echo "🤖 DDroid v${DDROID_VERSION} instalado com sucesso!"
