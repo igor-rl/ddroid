@@ -1,12 +1,9 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.13"
+DDROID_VERSION="1.0.14"
 CURSOR=">"
-
 RUN_MIGRATION=false
 RUN_DATABASE=false
-DB_PORTS=(4001 5432)
-APP_PORTS=(4000 4000)
 
 if [ "$1" == "--version" ]; then
   echo "$DDROID_VERSION"
@@ -37,19 +34,23 @@ unsetVars(){
 load_or_create_env() {
   if [ ! -f ddroid.env ]; then
     # Se ddroid.env não existe, cria e preenche com valores padrão
-    echo "DB_CONTAINER_NAME=none" > ddroid.env
-    echo "BACK_CONTAINER_NAME=none" >> ddroid.env
-    echo "AMBIENTE=none" >> ddroid.env
-    echo "TESTE=none" >> ddroid.env
-    echo "LOCAL_OPTIONS=none" >> ddroid.env
-    echo "DOCKER_OPTIONS=none" >> ddroid.env
-    echo "KBS_OPTIONS=none" >> ddroid.env
-    echo "LOCAL_DB_VOLUME=./db/mysql" >> ddroid.env
+    echo "# Docker" > ddroid.env
     echo "DOCKER_HUB_USER=" >> ddroid.env
     echo "DOCKER_HUB_IMAGE=" >> ddroid.env
+    echo "DB_CONTAINER_NAME=none" > ddroid.env
+    echo "DB_VOLUME=./db/mysql" >> ddroid.env
+    echo "BACK_CONTAINER_NAME=none" >> ddroid.env
+    echo "" > ddroid.env
+    echo "# k8s" > ddroid.env
+    echo "K8S_DB_PORTS=(80 80)" >> ddroid.env
+    echo "K8S_APP_PORTS=(80 80)" >> ddroid.env
+    echo "" > ddroid.env
     echo "K8S_DB_FOLDER=" >> ddroid.env
+    echo "K8S_DB_POD_NAME=" >> ddroid.env
     echo "K8S_DB_SERVICE_NAME=" >> ddroid.env
     echo "K8S_API_FOLDER=" >> ddroid.env
+    echo "K8S_API_POD_NAME=" >> ddroid.env
+    echo "K8S_API_SERVICE_NAME=" >> ddroid.env
   fi
   # Carrega as variáveis do arquivo ddroid.env
   source ddroid.env
@@ -305,8 +306,8 @@ localClean(){
   if [[ "$response" =~ ^([sS][iI]|[sS])$ ]]; then
       echo "🤖  docker compose down $DB_CONTAINER_NAME"
       docker compose down $DB_CONTAINER_NAME
-      echo "🗑️   sudo rm -rf $LOCAL_DB_VOLUME"
-      sudo rm -rf $LOCAL_DB_VOLUME
+      echo "🗑️   sudo rm -rf $DB_VOLUME"
+      sudo rm -rf $DB_VOLUME
   fi
   echo
 
@@ -363,25 +364,25 @@ k8sApply(){
 
   # DATABASE
   echo
-  echo "📦  Iniciando configurações do ${DB_CONTAINER_NAME}..."
+  echo "📦  Iniciando configurações do ${K8S_DB_POD_NAME}..."
   echo "🤖  kubectl apply -f ${K8S_DB_FOLDER}"
   kubectl apply -f ${K8S_DB_FOLDER}
-  while [[ $(kubectl get pods -l app=${DB_CONTAINER_NAME} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+  while [[ $(kubectl get pods -l app=${K8S_DB_POD_NAME} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
     echo
-    echo "🤖  kubectl get pods -l app=${DB_CONTAINER_NAME}"
-    kubectl get pods -l app=${DB_CONTAINER_NAME}
+    echo "🤖  kubectl get pods -l app=${K8S_DB_POD_NAME}"
+    kubectl get pods -l app=${K8S_DB_POD_NAME}
     sleep 5
   done
   echo
-  echo "🤖  kubectl get pods -l app=${DB_CONTAINER_NAME} -o jsonpath='{.items[0].metadata.name}'"
-  DB_POD=$(kubectl get pods -l app=${DB_CONTAINER_NAME} -o jsonpath='{.items[0].metadata.name}')
+  echo "🤖  kubectl get pods -l app=${K8S_DB_POD_NAME} -o jsonpath='{.items[0].metadata.name}'"
+  DB_POD=$(kubectl get pods -l app=${K8S_DB_POD_NAME} -o jsonpath='{.items[0].metadata.name}')
   echo "🤖  ${DB_POD}"
   echo
-  echo "🤖  kubectl port-forward ${DB_POD} ${DB_PORTS[0]}:${DB_PORTS[1]} & echo $! > tmp/db-port-forward.pid"
-  kubectl port-forward ${DB_POD} ${DB_PORTS[0]}:${DB_PORTS[1]} &
+  echo "🤖  kubectl port-forward ${DB_POD} ${K8S_DB_PORTS[0]}:${K8S_DB_PORTS[1]} & echo $! > tmp/db-port-forward.pid"
+  kubectl port-forward ${DB_POD} ${K8S_DB_PORTS[0]}:${K8S_DB_PORTS[1]} &
   echo $! > tmp/db-port-forward.pid
   echo
-  echo "🤖  🔗 Port-forward em segundo plano ${DB_PORTS[0]}:${DB_PORTS[1]}"
+  echo "🤖  🔗 Port-forward em segundo plano ${K8S_DB_PORTS[0]}:${K8S_DB_PORTS[1]}"
   DB_ENDPOINT=$(kubectl get service ${K8S_DB_SERVICE_NAME} -o=jsonpath='{.spec.clusterIP}')
   echo
   echo "🤖  kubectl create configmap app-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -"
@@ -392,13 +393,13 @@ k8sApply(){
   echo "📦  Iniciando configurações da API..."
   echo "🤖  kubectl apply -f ${K8S_API_FOLDER}"
   kubectl apply -f ${K8S_API_FOLDER}
-  while [[ $(kubectl get pods -l app=${BACK_CONTAINER_NAME} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+  while [[ $(kubectl get pods -l app=${K8S_API_POD_NAME} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
     echo
-    echo "🤖  kubectl get pods -l app=${BACK_CONTAINER_NAME}"
-    kubectl get pods -l app=${BACK_CONTAINER_NAME}
+    echo "🤖  kubectl get pods -l app=${K8S_API_POD_NAME}"
+    kubectl get pods -l app=${K8S_API_POD_NAME}
     sleep 5
   done
-  APP_POD=$(kubectl get pods -l app=${BACK_CONTAINER_NAME} -o jsonpath='{.items[0].metadata.name}')
+  APP_POD=$(kubectl get pods -l app=${K8S_API_POD_NAME} -o jsonpath='{.items[0].metadata.name}')
   echo
   echo -n "🤖❓ Atualizar as migrações? [s/N]:"
   read -r response
@@ -409,11 +410,11 @@ k8sApply(){
     kubectl exec ${APP_POD} -- npm run migration:run
   fi
   echo
-  echo "🤖  kubectl port-forward ${APP_POD} ${APP_PORTS[0]}:${APP_PORTS[1]} & echo $! > tmp/app-port-forward.pid"
-  kubectl port-forward ${APP_POD} ${APP_PORTS[0]}:${APP_PORTS[1]} &
+  echo "🤖  kubectl port-forward ${APP_POD} ${K8S_APP_PORTS[0]}:${K8S_APP_PORTS[1]} & echo $! > tmp/app-port-forward.pid"
+  kubectl port-forward ${APP_POD} ${K8S_APP_PORTS[0]}:${K8S_APP_PORTS[1]} &
   echo $! > tmp/app-port-forward.pid
   echo
-  echo "🤖  🔗 Port-forward do ${BACK_CONTAINER_NAME} em segundo plano ${APP_PORTS[0]}:${APP_PORTS[1]}"
+  echo "🤖  🔗 Port-forward do ${BACK_CONTAINER_NAME} em segundo plano ${K8S_APP_PORTS[0]}:${K8S_APP_PORTS[1]}"
   echo
   echo "🤖  ✅ Deploy concluído!"
   echo
