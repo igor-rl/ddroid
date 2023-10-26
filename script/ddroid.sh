@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.14"
+DDROID_VERSION="1.0.15"
 CURSOR=">"
 RUN_MIGRATION=false
 RUN_DATABASE=false
@@ -460,7 +460,7 @@ k8sDestroy(){
   echo -n "🤖⚠️  Deseja mesmo continuar? Todo o cluster será perdido! [s/N]:"
   read -r response
   if [[ "$response" =~ ^([sS][iI]|[sS])$ ]]; then
-      source ./scripts/stop.sh
+      k8sDelete
       echo "🤖  minikube delete --all"
       sleep 3
       minikube delete --all

@@ -1,5 +1,5 @@
 #!/bin/bash
-DDROID_VERSION="1.0.14"
+DDROID_VERSION="1.0.15"
 
 check_current_version() {
     if [ -f ~/bin/ddroid ]; then
