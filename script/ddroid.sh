@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.19"
+DDROID_VERSION="1.0.20"
 CURSOR=">"
 RUN_MIGRATION=false
 RUN_DATABASE=false
@@ -49,9 +49,11 @@ load_or_create_env() {
     echo "K8S_API_POD_NAME=" >> ddroid.env
     echo "K8S_API_SERVICE_NAME=" >> ddroid.env
   fi
-  # Carrega as variáveis do arquivo ddroid.env
-  source ddroid.env
+
 }
+
+# Carrega as variáveis do arquivo ddroid.env
+source ddroid.env
 
 # Analise os argumentos
 for arg in "$@"; do
