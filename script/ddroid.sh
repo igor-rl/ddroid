@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DDROID_VERSION="1.0.19"
+DDROID_VERSION="1.0.21"
 CURSOR=">"
 RUN_MIGRATION=false
 RUN_DATABASE=false
@@ -29,31 +29,20 @@ unsetVars(){
   LOCAL_OPTIONS=none
   DOCKER_OPTIONS=none
   KBS_OPTIONS=none
+  DIRETORIO=k8s
 }
 
 load_or_create_env() {
   if [ ! -f ddroid.env ]; then
-    # Se ddroid.env não existe, cria e preenche com valores padrão
-    echo "# Docker" > ddroid.env
     echo "DOCKER_HUB_USER=" >> ddroid.env
     echo "DOCKER_HUB_IMAGE=" >> ddroid.env
     echo "DB_CONTAINER_NAME=none" > ddroid.env
     echo "DB_VOLUME=./db/mysql" >> ddroid.env
     echo "BACK_CONTAINER_NAME=none" >> ddroid.env
-    echo "K8S_DB_PORTS=(80 80)" >> ddroid.env
-    echo "K8S_APP_PORTS=(80 80)" >> ddroid.env
-    echo "K8S_DB_FOLDER=" >> ddroid.env
-    echo "K8S_DB_POD_NAME=" >> ddroid.env
-    echo "K8S_DB_SERVICE_NAME=" >> ddroid.env
-    echo "K8S_API_FOLDER=" >> ddroid.env
-    echo "K8S_API_POD_NAME=" >> ddroid.env
-    echo "K8S_API_SERVICE_NAME=" >> ddroid.env
   fi
-  # Carrega as variáveis do arquivo ddroid.env
-  source ddroid.env
 }
 
-# Analise os argumentos
+
 for arg in "$@"; do
     case $arg in
         --migration=true)
@@ -148,7 +137,7 @@ localOptions(){
 
 KbsOptions(){
   CURSOR_POSITION=0
-  options=("🚀  Iniciar com Minikube" "⚓  Deploy k8s" "🗑️   Deletar deploys" "🧨  Destruir projeto" "🔙  Voltar")
+  options=("🚀  kubectl apply" "🗑️   kubectl delete" "🧨  Destruir projeto" "🔙  Voltar")
   print_menu() {
     for i in "${!options[@]}"; do
       if [[ "$i" -eq $CURSOR_POSITION ]]; then
@@ -174,11 +163,10 @@ KbsOptions(){
     elif [[ $key == "" ]]; then
       clear
       case $CURSOR_POSITION in
-        0) KBS_OPTIONS=init; break ;;
-        1) KBS_OPTIONS=start; break ;;
-        2) KBS_OPTIONS=stop; break ;;
-        3) KBS_OPTIONS=destroi; break ;;
-        4) voltar; break ;;
+        0) KBS_OPTIONS=start; break ;;
+        1) KBS_OPTIONS=stop; break ;;
+        2) KBS_OPTIONS=destroi; break ;;
+        3) voltar; break ;;
       esac
     fi
   done
@@ -223,6 +211,66 @@ dockerOptions(){
   done
 }
 
+get_directories() {
+  find ${DIRETORIO}/ -maxdepth 1 -mindepth 1 -type d
+}
+
+print_menu() {
+  for i in "${!options[@]}"; do
+    if [[ "$i" -eq $CURSOR_POSITION ]]; then
+      echo -e "${CURSOR} ${options[$i]}"
+    else
+      echo -e "  ${options[$i]}"
+    fi
+  done
+}
+
+selecionarDiretorios() {
+  if [ ! -d "k8s/" ]; then
+    echo "🤖  A pasta k8s não existe."
+    exit 0
+  fi
+  CURSOR_POSITION=0
+  while true; do
+
+    NUM=$(find ${DIRETORIO} -maxdepth 1 -name "*.yaml" -o -name "*.yml" | wc -l)
+    WORD=''
+    # Fazer uma declaração if com o resultado
+    if [ $NUM -gt 0 ]; then
+      if [ $NUM -gt 0 ]; then
+        WORD=s
+      fi
+      echo "🤖  Aplicando $NUM manifesto$WORD."
+      break
+    fi
+
+    directories=($(get_directories))
+    options=("${directories[@]}")
+    options+=("todos")
+    clear
+    echo -e "\e[1m📂  Diretórios encontrados:\e[0m"
+    print_menu
+    read -rsn3 key
+
+    if [[ $key == $'\x1b[A' ]]; then
+      if [[ "$CURSOR_POSITION" -gt 0 ]]; then
+        CURSOR_POSITION=$((CURSOR_POSITION-1))
+      fi
+    elif [[ $key == $'\x1b[B' ]]; then
+      if [[ "$CURSOR_POSITION" -lt $((${#options[@]}-1)) ]]; then
+        CURSOR_POSITION=$((CURSOR_POSITION+1))
+      fi
+    elif [[ $key == "" ]]; then
+      if [[ "$CURSOR_POSITION" -eq $((${#options[@]}-1)) ]]; then
+        break
+      else
+        DIRETORIO=${options[$CURSOR_POSITION]}
+        CURSOR_POSITION=0
+      fi
+    fi
+  done
+}
+
 verificarInstalacao() {
   if [ ! -d "node_modules" ] || [ ! -f "package-lock.json" ]; then
     echo "🤖  npm install"
@@ -239,6 +287,16 @@ verificarDesistalacao() {
       echo "🤖  sudo rm -rf ./node_modules"
       sudo rm -rf ./node_modules
     fi
+  fi
+}
+
+verificarMinikube(){
+  status=$(minikube status 2>&1)
+  if [[ $status == *"host: Running"* ]]; then
+    echo "🤖  Minikube já está em execução."
+  else
+    echo "🤖  Iniciando o Minikube..."
+    minikube start
   fi
 }
 
@@ -316,17 +374,6 @@ localClean(){
   exit
 }
 
-dockerProd(){
-  echo -e "\e[1m🐳 Docker - Teste simulando imagem de produção\e[0m"
-  verificarBuild
-  echo "🤖  docker compose -f docker-compose-prod.yaml up -d"
-  docker compose -f docker-compose-prod.yaml up -d
-  verificaMigration
-  echo "🤖  docker logs $BACK_CONTAINER_NAME -f"
-  docker logs $BACK_CONTAINER_NAME -f 
-  exit
-}
-
 dockerDev(){
   echo -e "\e[1m🐳 Docker - Teste em ambiente de desenvolvimento\e[0m"
   echo "🤖  docker compose up -d"
@@ -337,6 +384,17 @@ dockerDev(){
   echo "🤖  docker logs $BACK_CONTAINER_NAME -f"
   docker exec -it $BACK_CONTAINER_NAME /bin/sh -c "npm run start:dev"
   docker logs $BACK_CONTAINER_NAME -f
+  exit
+}
+
+dockerProd(){
+  echo -e "\e[1m🐳 Docker - Teste simulando imagem de produção\e[0m"
+  verificarBuild
+  echo "🤖  docker compose -f docker-compose-prod.yaml up -d"
+  docker compose -f docker-compose-prod.yaml up -d
+  verificaMigration
+  echo "🤖  docker logs $BACK_CONTAINER_NAME -f"
+  docker logs $BACK_CONTAINER_NAME -f 
   exit
 }
 
@@ -358,90 +416,59 @@ dockerPrune(){
 }
 
 k8sApply(){
-  echo "🤖  Iniciando deploy"
-  source ddroid.env
-
-  # DATABASE
-  echo
-  echo "📦  Iniciando configurações do ${K8S_DB_POD_NAME}..."
-  echo "🤖  kubectl apply -f ${K8S_DB_FOLDER}"
-  kubectl apply -f ${K8S_DB_FOLDER}
-  while [[ $(kubectl get pods -l app=${K8S_DB_POD_NAME} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-    echo
-    echo "🤖  kubectl get pods -l app=${K8S_DB_POD_NAME}"
-    kubectl get pods -l app=${K8S_DB_POD_NAME}
-    sleep 5
+  verificarMinikube
+  selecionarDiretorios
+  for file in $(find ${DIRETORIO} -type f \( -name "*.yml" -o -name "*.yaml" \)); do
+    echo "🤖  kubectl apply -f $file"
+    kubectl apply -f $file
   done
-  echo
-  echo "🤖  kubectl get pods -l app=${K8S_DB_POD_NAME} -o jsonpath='{.items[0].metadata.name}'"
-  DB_POD=$(kubectl get pods -l app=${K8S_DB_POD_NAME} -o jsonpath='{.items[0].metadata.name}')
-  echo "🤖  ${DB_POD}"
-  echo
-  echo "🤖  kubectl port-forward ${DB_POD} ${K8S_DB_PORTS[0]}:${K8S_DB_PORTS[1]} & echo $! > tmp/db-port-forward.pid"
-  kubectl port-forward ${DB_POD} ${K8S_DB_PORTS[0]}:${K8S_DB_PORTS[1]} &
-  echo $! > tmp/db-port-forward.pid
-  echo
-  echo "🤖  🔗 Port-forward em segundo plano ${K8S_DB_PORTS[0]}:${K8S_DB_PORTS[1]}"
-  DB_ENDPOINT=$(kubectl get service ${K8S_DB_SERVICE_NAME} -o=jsonpath='{.spec.clusterIP}')
-  echo
-  echo "🤖  kubectl create configmap ${K8S_API_POD_NAME}-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -"
-  kubectl create configmap ${K8S_API_POD_NAME}-config --from-literal=instance_host=${DB_ENDPOINT} --dry-run=client -o yaml | kubectl apply -f -
+  
+  clear
 
-  # API
-  echo
-  echo "📦  Iniciando configurações da API..."
-  echo "🤖  kubectl apply -f ${K8S_API_FOLDER}"
-  kubectl apply -f ${K8S_API_FOLDER}
-  while [[ $(kubectl get pods -l app=${K8S_API_POD_NAME} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-    echo
-    echo "🤖  kubectl get pods -l app=${K8S_API_POD_NAME}"
-    kubectl get pods -l app=${K8S_API_POD_NAME}
-    sleep 5
+  SERVICES=$(kubectl get services -o jsonpath='{.items[*].metadata.name}')
+  for SERVICE in $SERVICES; do
+
+    PORT_FORWARD_NAME="${SERVICE^^}_PORT_FORWARD"
+    eval "PORT_FORWARD_VALUES=(\${$PORT_FORWARD_NAME[@]})"
+
+    if [[ ${#PORT_FORWARD_VALUES[@]} -gt 0 ]]; then
+      if [ ! -f "tmp/$SERVICE-port-forward.pid" ]; then
+        while [[ $(kubectl get pods -l app=${SERVICE} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+          echo
+          echo "🤖  kubectl get pods -l app=${SERVICE}"
+          kubectl get pods -l app=${SERVICE}
+          sleep 5
+        done
+        kubectl port-forward svc/${SERVICE} ${PORT_FORWARD_VALUES[0]}:${PORT_FORWARD_VALUES[1]} &
+        [ ! -d "tmp" ] && mkdir "tmp"
+        echo $! > tmp/db-port-forward.pid
+        echo
+        echo "🤖  🔗 Port-forward do ${SERVICE} em segundo plano ${PORT_FORWARD_VALUES[0]}:${PORT_FORWARD_VALUES[1]}"
+        echo
+      fi
+    fi
   done
-  APP_POD=$(kubectl get pods -l app=${K8S_API_POD_NAME} -o jsonpath='{.items[0].metadata.name}')
-  echo
-  echo -n "🤖❓ Atualizar as migrações? [s/N]:"
-  read -r response
-  if [[ "$response" =~ ^([sS][iI]|[sS])$ ]]; then
-    echo
-    echo "🤖  Executando migrações..."
-    echo "🤖  kubectl exec ${APP_POD} -- npm run migration:run"
-    kubectl exec ${APP_POD} -- npm run migration:run
-  fi
-  echo
-  echo "🤖  kubectl port-forward ${APP_POD} ${K8S_APP_PORTS[0]}:${K8S_APP_PORTS[1]} & echo $! > tmp/app-port-forward.pid"
-  kubectl port-forward ${APP_POD} ${K8S_APP_PORTS[0]}:${K8S_APP_PORTS[1]} &
-  echo $! > tmp/app-port-forward.pid
-  echo
-  echo "🤖  🔗 Port-forward do ${BACK_CONTAINER_NAME} em segundo plano ${K8S_APP_PORTS[0]}:${K8S_APP_PORTS[1]}"
   echo
   echo "🤖  ✅ Deploy concluído!"
-  echo
-  echo "🤖  kubectl logs -f $APP_POD"
-  kubectl logs -f $APP_POD
 }
 
 k8sDelete(){
   echo
-  echo "🤖  🚀  Encerrando projeto"
-  if [ -f tmp/db-port-forward.pid ]; then
-      PID=$(cat tmp/db-port-forward.pid)
-      kill $PID
-      echo "🤖  rm tmp/db-port-forward.pid"
-      rm tmp/db-port-forward.pid
-      echo "🤖  🛑  processo port-forward do ${DB_CONTAINER_NAME} com PID $PID foi interrompido."
-  else
-      echo "🤖  ⚠️  arquivo db-port-forward.pid não encontrado. Parece que o port-forward do ${DB_CONTAINER_NAME} não foi iniciado por este script."
-  fi
-  if [ -f tmp/app-port-forward.pid ]; then
-      PID=$(cat tmp/app-port-forward.pid)
-      kill $PID
-      echo "🤖  rm tmp/app-port-forward.pid"
-      rm tmp/app-port-forward.pid
-      echo "🤖  🛑  processo port-forward do ${BACK_CONTAINER_NAME} com PID $PID foi interrompido."
-  else
-      echo "🤖  ⚠️  arquivo app-port-forward.pid não encontrado. Parece que o port-forward do ${BACK_CONTAINER_NAME} não foi iniciado por este script."
-  fi
+
+  verificarMinikube
+  selecionarDiretorios
+  for file in $(find ${DIRETORIO} -type f \( -name "*.yml" -o -name "*.yaml" \)); do
+    echo "🤖  🚀  kubectl delete -f $file"
+    kubectl delete -f $file
+  done
+
+  for file in tmp/*-port-forward.pid; do
+    PID=$(cat "$file")
+    echo "🤖  Matando processo com PID $PID..."
+    kill "$PID"
+    rm ${file}
+  done
+
   echo
   echo "🤖  🗑️  kubectl delete -f ${K8S_DB_FOLDER}"
   kubectl delete -f ${K8S_DB_FOLDER}
@@ -494,7 +521,11 @@ uninstall(){
   fi
 }
 
+
+
 load_or_create_env
+
+source ddroid.env
 
 while true; do
 
@@ -537,11 +568,6 @@ while true; do
   if [ "$AMBIENTE" = "k8s" ]; then
     KbsOptions
     case $KBS_OPTIONS in
-      init)
-        echo "🤖  minikube start"
-        minikube start
-        k8sApply;
-        exit;;
       start)
         k8sApply;
         exit;;
